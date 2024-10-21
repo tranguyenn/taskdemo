@@ -3,7 +3,7 @@ var router = express.Router();
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.status(200).send("Welcome to MinitaskManagement");
+  res.status(200).send("Welcome to Mini Task Management");
 });
 const userRouter = require("./user.api.js")
 router.use("/users",userRouter)

@@ -1,5 +1,8 @@
 const express= require("express")
 const { createUser, getUserById, getUserTask, getUserByFilter, getUserByName } = require("../controllers/user.controller")
+const validators = require("../middlewares/validators");
+const validateId = require("../middlewares/validateId");
+const validateUser = require("../middlewares/validateUser");
 const router = express.Router()
 
 /**
@@ -16,7 +19,7 @@ router.get("/search",getUserByName)
  * @description Get user by id
  * @access public
  */
-router.get("/:id",getUserById)
+router.get("/:id",validators.validate(validateId),getUserById)
 
 /**
  * @route GET api/users/filter
@@ -39,7 +42,7 @@ router.get("/:id/tasks",getUserTask)
  * @access private, manager, employee
  * @requiredBody: name 
  */
-router.post("/",createUser)
+router.post("/",validators.validate(validateUser),createUser)
 
 //export
 module.exports= router

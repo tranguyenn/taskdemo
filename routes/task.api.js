@@ -7,6 +7,13 @@ const {
   deleteTaskById,
   updateTask,
 } = require("../controllers/task.controller");
+const validators = require("../middlewares/validators");
+const validateId = require("../middlewares/validateId");
+const validateUser = require("../middlewares/validateUser");
+const { param, body } = require('express-validator');
+const validateTask = require("../middlewares/validateTask");
+
+
 const router = express.Router();
 
 /**
@@ -14,7 +21,7 @@ const router = express.Router();
  * @description Get task by id
  * @access public
  */
-router.get("/:id", getTaskById);
+router.get("/:id",validators.validate(validateId), getTaskById);
 
 /**
  * @route GET api/tasks
@@ -30,7 +37,7 @@ router.get("/", getAllTasks);
  * @access private, manager
  * @requiredBody: name,description
  */
-router.post("/", createTask);
+router.post("/",validators.validate(validateTask), createTask);
 
 /**
  * @route PUT api/tasks/assignee
@@ -45,7 +52,7 @@ router.put("/assignee", addReference);
  * @description update status/description to a task
  * @access private manager
  */
-router.put("/updates/:id",updateTask);
+router.put("/updates/:id",validators.validate(validateId),updateTask);
 
 //Delete
 /**
@@ -53,7 +60,7 @@ router.put("/updates/:id",updateTask);
  * @description delete a task
  * @access public
  */
-router.delete("/:id", deleteTaskById);
+router.delete("/:id",validators.validate(validateId), deleteTaskById);
 //export
 module.exports = router;
 //Update
