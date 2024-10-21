@@ -8,6 +8,7 @@ const taskSchema = mongoose.Schema(
       type: String,
       enum: ["pending", "working", "review", "done", "archive"],
     },
+    deleted: { type: Boolean, default: false },
     referenceTo: { type: mongoose.SchemaTypes.ObjectId, ref: "User" }, //one to one optional
   },
   {

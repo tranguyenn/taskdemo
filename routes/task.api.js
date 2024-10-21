@@ -45,7 +45,7 @@ router.put("/assignee", addReference);
  * @description update status/description to a task
  * @access private manager
  */
-router.put("/",updateTask);
+router.put("/updates/:id",updateTask);
 
 //Delete
 /**

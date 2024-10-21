@@ -10,7 +10,7 @@ userController.createUser = async (req, res, next) => {
 
   try {
     const { name } = req.body;
-    if (!name) throw new AppError(402, "Bad Request", "Missing data Error");
+    if (!name) throw new AppError(402, "Bad Request", "Missing name error");
     const info = {
       name: name,
       "role": "employee"

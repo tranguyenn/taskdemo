@@ -1,5 +1,5 @@
 const { sendResponse, AppError } = require("../helpers/utils.js");
-
+const softDelete = require('mongoosejs-soft-delete');
 const Task = require("../models/Task.js");
 const User = require("../models/User.js");
 
@@ -48,6 +48,10 @@ taskController.addReference = async (req, res, next) => {
     //always remember to control your inputs
     //in real project you must also check if id (referenceTo) is valid as well as if document with given id is exist before any futher process
     let found = await Task.findById(taskId);
+    if(found.deleted==true){
+     throw new AppError(404, "Not Found", "Update Task Error");
+
+    }
     //add your check to control if task is notfound
     const refFound = await User.findById(empId);
     //add your check to control if foo is notfound
@@ -89,7 +93,7 @@ taskController.getAllTasks = async (req, res, next) => {
         });
     }
    
-    const filter = filterQuery;
+    const filter = {"deleted":false,...filterQuery};
     //mongoose query
     const listOfFound = await Task.find(filter).populate("referenceTo");
     //this to query data from the reference and append to found result.
@@ -111,7 +115,8 @@ taskController.getTaskById = async (req, res, next) => {
     try {
       const { id } = req.params;
       if (!id) throw new AppError(402, "Bad Request", "Missing id Error");
-      const taskFound = await Task.findById(id);
+      const taskFound = await Task.findOne({ _id: id, deleted: false });
+      if(!taskFound) throw new AppError(404, "Not Found", "Task not found Error");
       sendResponse(
         res,
         200,
@@ -136,8 +141,8 @@ taskController.deleteTaskById = async (req, res, next) => {
     const options = { new: true };
     try {
       //mongoose query
-      const updated = await Task.findByIdAndDelete(id, options);
-  
+      const updated = await Task.findByIdAndUpdate(id, {deleted: true});
+
       sendResponse(res, 200, true, { data: updated }, null, "Delete task success");
     } catch (err) {
       next(err);
@@ -146,32 +151,21 @@ taskController.deleteTaskById = async (req, res, next) => {
 
 //update task detail
 taskController.updateTask = async (req, res, next) => {
-    //in real project you will getting info from req
+   
     try {
-    //     const allowedFilter = ["name", "status","description"];
-    //     let { filterQuery } = req.body;
-    //     const filterKeys = Object.keys(filterQuery);
-    //     console.log("filter", filterKeys);
-    //     filterKeys?.forEach((key) => {
-    //       if (!allowedFilter.includes(key)) {
-    //         const exception = new Error(`Query ${key} is not allowed`);
-    //         exception.statusCode = 401;
-    //         throw exception;
-    //       }
-    //       if (!filterQuery[key]) delete filterQuery[key];
-    //     });
-    const { id,name, description, status } = req.body;
+    const id=req.params.id;
+    const { name, description, status } = req.body;
     if(!id) throw new AppError(400, "Bad Request", "Update Task Error null id");
-
-
-    // erroreEnum=info.validateSync();
-    // console.log("error num",erroreEnum);
-      //always remember to control your inputs
-      //in real project you must also check if id (referenceTo) is valid as well as if document with given id is exist before any futher process
-      //mongoose query
-      const found= await Task.findById(id);
+      const found= await Task.findOne({ _id: id, deleted: false });
+      console.log(found);
       if(!found) throw new AppError(404, "Not Found", "Update Task Error");
-      
+      if(found.status=="done"){
+        if(status){
+          if(status!="archive"&&status!="done"){
+            throw new AppError(400, "Bad Request", "Cannot update status done to undone Error");
+          }
+        }
+      }
       const info = {
         name: name? name: found.name,
         description: description? description: found.description,
